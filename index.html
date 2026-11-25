@@ -25,38 +25,38 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 <button id="play" type="button">PLAY</button>
 <button id="mute" type="button" aria-label="Mute / unmute"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M17 9l5 6M22 9l-5 6"/></svg></button>
 <script>
-/* ===================  PENGATURAN (mudah diubah)  =================== */
+
 const CFG = {
-  music: 'music.mp3',     // ← file musik (taruh di folder yang sama), ganti namanya di sini jika perlu
-  lead: 0,                // musik mulai N detik setelah PLAY ditekan
-  cycle: 24,              // skala waktu tumbuh & mekar (detik); semua bunga selesai mekar di ±56% nilai ini (≈13 dtk), hanya sekali. Besar = lebih lambat
-  spinSpeed: .35,         // kecepatan putar bouquet (radian/detik), berputar terus-menerus
-  trail: .035,            // jeda antar percikan jejak kupu-kupu (detik); besar = jejak lebih tipis
-  flySpeed: 1.3,          // kecepatan kupu-kupu mengitari bouquet (radian/detik), terus-menerus
-  ramp: ".:-=+*#%@",      // karakter ASCII gelap → terang (9 level)
-  pitch: .17,             // kemiringan kamera
-  stars: 200,             // jumlah bintang (otomatis dikurangi ±40% di ponsel)
-  colors: [               // palet (indeks dipakai oleh kode bentuk)
-    '#ffcb2e','#5a3214','#f06fa0','#c8286e','#ffd9e6','#5fa04a','#fbf7f1','#f0b428', // 0 kuning,1 coklat,2 pink,3 magenta,4 pink pucat,5 hijau,6 putih,7 emas
-    '#c8aa78','#96784c','#8a5a40','#f0e2c8','#f57a2a','#e66e1e','#f996bc','#336b36', // 8-9 goni,10-11 pita,12 oranye,13 benang sari,14 pink,15 hijau tua
-    '#c81e32','#b7cf6a','#dcc291','#8e1226','#f2b79a','#ff9ec4','#ffe45a','#f0d84a', // 16 merah,17 hijau muda,18 goni terang,19 merah tua,20 peach,21 cosmos,22 kuning krisan,23 -
-    '#e0b830','#5fb8ff','#bfe6ff','#1a3a7a','#e8f2ff'                                 // 24 baby's breath,25 biru kupu,26 biru muda,27 navy,28 tubuh kupu
+  music: 'music.mp3',    
+  lead: 0,              
+  cycle: 24,       
+  spinSpeed: .35,        
+  trail: .035,         
+  flySpeed: 1.3,        
+  ramp: ".:-=+*#%@",   
+  pitch: .17,            
+  stars: 200,           
+  colors: [           
+    '#ffcb2e','#5a3214','#f06fa0','#c8286e','#ffd9e6','#5fa04a','#fbf7f1','#f0b428',
+    '#c8aa78','#96784c','#8a5a40','#f0e2c8','#f57a2a','#e66e1e','#f996bc','#336b36',
+    '#c81e32','#b7cf6a','#dcc291','#8e1226','#f2b79a','#ff9ec4','#ffe45a','#f0d84a', 
+    '#e0b830','#5fb8ff','#bfe6ff','#1a3a7a','#e8f2ff'                                
   ],
-  // [mulai, durasi] tumbuh tiap bagian, fraksi dari satu siklus. Urutan: lily, bunga matahari, gerbera, lily2, pengisi, daun, pembungkus, pita
+ 
   timing: [[0,.36],[.04,.36],[.08,.36],[.12,.34],[.16,.34],[.06,.30],[.30,.18],[.46,.10]],
-  spin: .54,              // bouquet mulai berputar di fraksi ini dari cycle (setelah mekar)
-  fly: .58                // kupu-kupu muncul di fraksi ini dari cycle (setelah semua bunga mekar)
+  spin: .54,           
+  fly: .58              
 };
 
-/* ===================  GENERATOR BENTUK 3D  =================== */
+
 const isM = Math.min(innerWidth, innerHeight) < 700, COLB = isM ? 54 : 84;
 const D = 3.4 / COLB * .8, PI = Math.PI, TAU = PI * 2;
 let SCL = 1, seed = 7;
 const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 };
 const fr = v => v - Math.floor(v);
-const A = [];  // per titik (19 angka): kunci kuncup[3], setengah mekar[3], mekar[3], normal[3], warna, grup, mulai-mekar, mulai-tampak, titik asal[3]
+const A = [];
 const add = (p0, p1, p2, n, c, g, b, v, an) => A.push(...p0, ...p1, ...p2, ...n, c, g, b, v, ...an);
-const st = (p, n, c, g, b, an) => add(p, p, p, n, c, g, b, b, an || p);   // an = titik asal tumbuh (muncul dengan memekar keluar dari sini)   // titik statis (batang, pembungkus, pita)
+const st = (p, n, c, g, b, an) => add(p, p, p, n, c, g, b, b, an || p);
 
 function flower(g, H, tx, tz, sc, build) {
   const sx = Math.sin(tx), cx = Math.cos(tx), sz = Math.sin(tz), cz = Math.cos(tz); SCL = sc;
@@ -66,7 +66,7 @@ function flower(g, H, tx, tz, sc, build) {
     add(T(p0, sc), T(p1, sc), T(p, sc), T(n, 1).map((v, i) => v - H[i]), c, g, b, .2, H);
   }); SCL = 1;
 }
-// Kelopak: tumbuh dari pusat; pose kuncup = kelopak tegak & merapat, lalu membuka ke luar
+
 function petal(e, ang, r0, L, W, lift, curl, y0, cf, b0, bs) {
   const ca = Math.cos(ang), sa = Math.sin(ang), dd = D / SCL, nu = Math.ceil(L / dd), RH = [1.35, .65, 0];
   for (let i = 0; i <= nu; i++) {
@@ -93,7 +93,7 @@ function stem(g, H) {
 const tilt = H => [Math.max(.3, Math.min(1.1, .3 + .6 * H[2])), -.55 * H[0]];
 const fill = (H, sc, build, stm) => { const [tx, tz] = tilt(H); flower(4, H, tx, tz, sc, build); if (stm) stem(4, H) };
 
-// ---- tiga bunga utama ----
+
 const lilyCol = (u, v) => { if (u < .14) return 17; const av = Math.abs(v); if (av < .14 && u < .85) return 3; if (av > .8 || u > .9) return 4; return fr(Math.sin(u * 127.1 + v * 311.7) * 43758.5453) > .9 ? 3 : 2 };
 const lily = e => {
   for (let k = 0; k < 3; k++) petal(e, k * TAU / 3 + .3, .03, .88, .2, .5, .9, .02, lilyCol, .5 + .05 * k / 3, .1);
@@ -102,19 +102,19 @@ const lily = e => {
 };
 const HL = [-.72, .55, .12], HS = [.28, .78, -.12], HD = [-.18, .12, .68], HL2 = [.98, .25, .3];
 flower(0, HL, .5, .85, 1, lily); stem(0, HL);
-flower(1, HS, .5, -.2, 1, e => {          // bunga matahari
+flower(1, HS, .5, -.2, 1, e => {
   disc(e, .27, (r, i) => r > .88 || i % 7 == 0 ? 7 : 1, .05, .44);
   for (let k = 0; k < 21; k++) petal(e, k * TAU / 21, .25, .4, .085, .07, 0, 0, u => u < .18 ? 7 : 0, .48 + .1 * k / 21, .1);
   for (let k = 0; k < 21; k++) petal(e, (k + .5) * TAU / 21, .27, .36, .08, .05, 0, -.035, u => u < .18 ? 7 : 0, .52 + .1 * k / 21, .1);
 }); stem(1, HS);
-flower(2, HD, .95, .15, 1, e => {         // gerbera putih
+flower(2, HD, .95, .15, 1, e => {
   disc(e, .13, r => r < .55 ? 1 : 7, .03, .44);
   for (let k = 0; k < 26; k++) petal(e, k * TAU / 26, .12, .46, .048, .10, .12, 0, () => 6, .5 + .1 * k / 26, .1);
   for (let k = 0; k < 26; k++) petal(e, (k + .5) * TAU / 26, .12, .38, .045, .14, .06, .025, () => 6, .56 + .1 * k / 26, .1);
 }); stem(2, HD);
 flower(3, HL2, .6, -.8, .85, lily); stem(3, HL2);
 
-// ---- bunga pengisi ----
+
 const rose = (c1, c2) => e => { for (let k = 0; k < 4; k++) for (let j = 0; j < 5; j++) petal(e, k * 1.3 + j * TAU / 5, .015 + .04 * k, .1 + .035 * k, .065 + .02 * k, .2 - .02 * k, .05, 0, u => u > .75 ? c2 : c1, .46 + .2 * k / 4, .06) };
 [[[.42, .08, .72], 1, 16, 19], [[.62, .62, .28], .85, 16, 19], [[.9, .72, -.05], .8, 20, 4]].forEach(([H, s, a, b]) => fill(H, s, rose(a, b), 1));
 const chrys = e => { disc(e, .06, () => 7, .04, .44); for (let r = 0; r < 2; r++) for (let k = 0; k < 18; k++) petal(e, k * TAU / 18 + r * .17, .04, .3 - .07 * r, .035, .12 + .1 * r, .02, .02 * r, () => 22, .48 + .08 * r + .1 * k / 18, .06) };
@@ -123,16 +123,16 @@ const cosmos = c => e => { disc(e, .04, () => 7, .02, .44); for (let k = 0; k < 
 [[-.45, .1, .6], [.1, .5, .55], [-.95, .2, .4], [.5, .3, .62], [1.05, .55, .15], [-.3, .85, .2], [.55, 1, -.2]].forEach((H, i) => fill(H, .8, cosmos(i % 2 ? 21 : 14)));
 const kal = e => { e([0, .02, 0], [0, 1, 0], 7, .46); for (let k = 0; k < 4; k++) petal(e, k * TAU / 4, .01, .07, .035, .03, .02, 0, () => 12, .5 + .05 * k, .05) };
 [[-1.05, .05, .35], [-1, .3, .1], [-.85, -.05, .55], [.8, -.05, .6], [1.1, 0, .3], [.25, -.02, .85]].forEach(H => { for (let k = 0; k < 4; k++) fill([H[0] + (rnd() - .5) * .16, H[1] + (rnd() - .5) * .12, H[2] + (rnd() - .5) * .12], .9, kal) });
-for (let k = 0; k < 6; k++) {  // ranting baby's breath
+for (let k = 0; k < 6; k++) {
   const dx = [-.8, -.5, .45, .8, -.2, .2][k], dz = [.3, -.4, -.4, .2, -.5, .5][k], n = Math.ceil(.9 / D);
   for (let i = 0; i <= n; i++) { const t = i / n, p = [dx * t * 1.5, .1 + t * 1.0 + .1 * Math.sin(t * 3), dz * t * 1.5]; st(p, [0, 1, 0], 15, 4, .3 + t * .3, [0, .1, 0]);
     if (t > .6 && i % 3 == 0) for (let q = 0; q < 3; q++) st([p[0] + (rnd() - .5) * .08, p[1] + (rnd() - .5) * .08, p[2] + (rnd() - .5) * .08], [0, 1, 0], 24, 4, .4 + t * .3, [0, .1, 0]) }
 }
-// ---- daun ----
+
 flower(5, [0, -.1, 0], 0, 0, 1, e => { for (let k = 0; k < 13; k++) petal(e, k * TAU / 13 + .2, .38 + .15 * (k % 2), .7, .14, .45, .6, 0, (u, v) => Math.abs(v) < .12 ? 15 : 5, .46 + .2 * k / 13, .08) });
 flower(5, [0, .15, 0], 0, 0, .7, e => { for (let k = 0; k < 7; k++) petal(e, k * TAU / 7 + .6, .6, .6, .12, .5, .5, 0, (u, v) => Math.abs(v) < .12 ? 15 : 5, .46 + .2 * k / 7, .08) });
 
-// ---- pembungkus goni berlapis (lipatan, tepi bergerigi, bukaan lebar) ----
+
 const prof = [[-1.9, .5], [-1.7, .4], [-1.3, .36], [-.95, .43], [-.5, .72], [-.15, 1], [.2, 1.2], [.7, 1.4]];
 function rp(y) { for (let i = 0; i < prof.length - 1; i++) if (y <= prof[i + 1][0]) { let t = (y - prof[i][0]) / (prof[i + 1][0] - prof[i][0]); t = (1 - Math.cos(Math.max(0, t) * PI)) / 2; return prof[i][1] + t * (prof[i + 1][1] - prof[i][1]) } return 1.4 }
 function wrap(a0, a1, yb, rim, dr, amp, cA, cB, ph) {
@@ -147,12 +147,12 @@ function wrap(a0, a1, yb, rim, dr, amp, cA, cB, ph) {
   }
 }
 const sc2 = th => .035 * Math.sin(14 * th);
-wrap(0, TAU, -1.9, th => -.1 + .3 * Math.max(0, -Math.sin(th)) + sc2(th), 0, .055, 9, 8, 0);                                              // lapisan dalam
-wrap(-PI / 2 - 1.5, -PI / 2 + 1.5, -.6, th => .15 + .5 * Math.pow(Math.max(0, Math.cos((th + PI / 2) / 1.5 * PI / 2)), 1.2) + sc2(th), .1, .03, 8, 9, 1); // kipas belakang
-wrap(PI / 2 - .1, PI / 2 + 2, -1.1, th => -.3 + .3 * Math.max(0, Math.cos((th - PI / 2 - 1) * 1.55)) + sc2(th), .07, .06, 8, 9, 2);        // sayap depan kiri
-wrap(PI / 2 - 2, PI / 2 + .1, -1.1, th => -.22 + .3 * Math.max(0, Math.cos((th - PI / 2 + 1) * 1.55)) + sc2(th), .12, .06, 9, 8, 4);      // sayap depan kanan
+wrap(0, TAU, -1.9, th => -.1 + .3 * Math.max(0, -Math.sin(th)) + sc2(th), 0, .055, 9, 8, 0);
+wrap(-PI / 2 - 1.5, -PI / 2 + 1.5, -.6, th => .15 + .5 * Math.pow(Math.max(0, Math.cos((th + PI / 2) / 1.5 * PI / 2)), 1.2) + sc2(th), .1, .03, 8, 9, 1);
+wrap(PI / 2 - .1, PI / 2 + 2, -1.1, th => -.3 + .3 * Math.max(0, Math.cos((th - PI / 2 - 1) * 1.55)) + sc2(th), .07, .06, 8, 9, 2);
+wrap(PI / 2 - 2, PI / 2 + .1, -1.1, th => -.22 + .3 * Math.max(0, Math.cos((th - PI / 2 + 1) * 1.55)) + sc2(th), .12, .06, 9, 8, 4);
 
-// ---- pita gingham + simpul + ekor ----
+
 {
   const yR = -.95, rr = rp(yR) + .2, chk = (a, b) => (Math.floor(a * 14) + Math.floor(b * 14)) & 1 ? 10 : 11, nT = Math.ceil(TAU * rr / .03);
   for (let it = 0; it < nT; it++) { const th = it / nT * TAU; for (let row = 0; row < 4; row++) { const y = yR - .05 + row * .03, r = rp(y) + .17 + (row == 0 || row == 3 ? .01 : 0); st([Math.cos(th) * r, y, Math.sin(th) * r], [Math.cos(th), 0, Math.sin(th)], (Math.floor(th * 9) + row) & 1 ? 10 : 11, 7, th / TAU * .55, [0, y, 0]) } }
@@ -168,7 +168,6 @@ wrap(PI / 2 - 2, PI / 2 + .1, -1.1, th => -.22 + .3 * Math.max(0, Math.cos((th -
 const N = A.length / 19, AF = Float32Array.from(A); A.length = 0;
 const GR = CFG.timing;
 
-/* ===================  KUPU-KUPU (dihasilkan tiap frame)  =================== */
 const BF = [];
 function ell(cx, cz, a, b, rot, cf) {
   const n = Math.ceil(Math.max(a, b) / .03), cr = Math.cos(rot), sr = Math.sin(rot);
@@ -177,7 +176,6 @@ function ell(cx, cz, a, b, rot, cf) {
 ell(.28, .12, .3, .17, .55, (r, p) => r > .86 ? 27 : r > .5 && r < .62 && Math.cos(p * 3) > .7 ? 26 : 25);
 ell(.17, -.16, .19, .15, -.3, (r, p) => r > .84 ? 27 : r > .45 && r < .58 && Math.cos(p * 3) > .7 ? 26 : 25);
 
-/* ===================  RENDERER ASCII  =================== */
 const cv = document.getElementById('c'), ctx = cv.getContext('2d'), scv = document.getElementById('s'), sx = scv.getContext('2d');
 const RAMP = CFG.ramp, LV = RAMP.length, CP = Math.cos(CFG.pitch), SP = Math.sin(CFG.pitch);
 const hex = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
@@ -195,7 +193,7 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); sx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.font = `bold ${cw / .6}px ui-monospace,Menlo,Consolas,"Courier New",monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 }
-function plot(x, y, z, nx, ny, nz, c) {   // ruang kamera (setelah putaran yaw) -> sel ASCII
+function plot(x, y, z, nx, ny, nz, c) {
   const y2 = y * CP - z * SP, z2 = y * SP + z * CP, s = 6 / (6 - z2);
   const col = (W / 2 + x * s * SC) / cw | 0, row = (H / 2 - (y2 + .35) * s * SC) / ch | 0;
   if (col < 0 || col >= cols || row < 0 || row >= rows) return;
@@ -204,7 +202,7 @@ function plot(x, y, z, nx, ny, nz, c) {   // ruang kamera (setelah putaran yaw) 
   zb[k] = z2; cc[k] = c; cl[k] = Math.min(LV - 1, (.2 + .8 * d + .08 * z2) * LV | 0);
 }
 const trail = [], TR = ['#bfe6ff', '#ffd9a0', '#ffb6cf']; let lastE = 0, lastA = 0;
-function drawTrail(a) {   // percikan jejak kupu-kupu: jatuh pelan dan memudar
+function drawTrail(a) {
   const dt = Math.min(.1, Math.max(0, a - lastA)); lastA = a;
   for (let i = trail.length - 1; i >= 0; i--) {
     const q = trail[i], k = (a - q.t0) / q.life; if (k >= 1) { trail.splice(i, 1); continue }
@@ -218,8 +216,8 @@ function butterfly(a) {
   const sz = .95 * sm(tf / 1.5), phi = -PI / 2 + CFG.flySpeed * tf, Rx = 1.5, Rz = 1.1;
   const py = .35 + .5 * Math.sin(1.7 * phi + .6) + .25 * Math.sin(a * 5), px = Rx * Math.cos(phi), pz = Rz * Math.sin(phi);
   let fx = -Rx * Math.sin(phi), fy = .85 * Math.cos(1.7 * phi + .6), fz = Rz * Math.cos(phi); const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
-  let rx = fz, rz = -fx; const rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl;            // kanan = atas × maju
-  const ux = fy * rz, uy = fz * rx - fx * rz, uz = -fy * rx;                                    // atas = maju × kanan
+  let rx = fz, rz = -fx; const rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl;
+  const ux = fy * rz, uy = fz * rx - fx * rz, uz = -fy * rx;
   const al = .2 + .8 * Math.sin(a * TAU * 2.2), ca = Math.cos(al), sa = Math.sin(al);
   if (a - lastE > CFG.trail && sz > .3 && trail.length < 80) {
     lastE = a; const y2 = py * CP - pz * SP, z2 = py * SP + pz * CP, s = 6 / (6 - z2);
@@ -242,7 +240,7 @@ function draw(u, a) {
     const f = sm((p - AF[o + 14]) / .28); let x, y, z;
     if (f < .5) { const t = f * 2; x = AF[o] + (AF[o + 3] - AF[o]) * t; y = AF[o + 1] + (AF[o + 4] - AF[o + 1]) * t; z = AF[o + 2] + (AF[o + 5] - AF[o + 2]) * t }
     else { const t = f * 2 - 1; x = AF[o + 3] + (AF[o + 6] - AF[o + 3]) * t; y = AF[o + 4] + (AF[o + 7] - AF[o + 4]) * t; z = AF[o + 5] + (AF[o + 8] - AF[o + 5]) * t }
-    const w = Math.max(.05, Math.min(.22, 1 - AF[o + 15])), gs = sm((p - AF[o + 15]) / w);   // tumbuh membesar dari titik asal, bukan muncul tiba-tiba
+    const w = Math.max(.05, Math.min(.22, 1 - AF[o + 15])), gs = sm((p - AF[o + 15]) / w);
     x = AF[o + 16] + (x - AF[o + 16]) * gs; y = AF[o + 17] + (y - AF[o + 17]) * gs; z = AF[o + 18] + (z - AF[o + 18]) * gs;
     const nx = AF[o + 9], nz = AF[o + 11];
     plot(x * cy + z * sy, y, -x * sy + z * cy, nx * cy + nz * sy, AF[o + 10], -nx * sy + nz * cy, AF[o + 12]);
@@ -254,32 +252,30 @@ function draw(u, a) {
   drawTrail(a);
 }
 
-/* ===================  BINTANG & EFEK LATAR  =================== */
 const R = Math.random, tints = ['#fff', '#fff', '#fff', '#ffe9c4', '#cfe3ff'];
 const stars = Array.from({ length: isM ? Math.round(CFG.stars * .6) : CFG.stars }, () => { const big = R() < .07; return { x: R(), y: R(), r: big ? 1.1 + R() * .7 : .4 + R() * R() * 1.0, a: big ? .7 + R() * .3 : .15 + R() * .5, p: R() * TAU, w: .4 + R() * 1.3, big, c: tints[R() * 5 | 0] } });
 const sparks = Array.from({ length: isM ? 16 : 28 }, () => ({ xo: (R() - .5) * 3.4, sp: .05 + R() * .06, ph: R(), r: .6 + R() * 1.1, c: R() < .5 ? '#ffd9a0' : '#ffb6cf', w: R() * TAU }));
 let shoot = null, nextShoot = 4;
 function drawStars(t, a) {
   sx.clearRect(0, 0, W, H);
-  for (const s of stars) {   // bintang berkelip; yang besar punya kilau silang tipis
+  for (const s of stars) {
     const tw = .55 + .45 * Math.sin(t * s.w + s.p), x = s.x * W, y = s.y * H;
     sx.globalAlpha = s.a * tw; sx.fillStyle = s.c;
     if (s.r < .9) sx.fillRect(x - s.r, y - s.r, s.r * 2, s.r * 2); else { sx.beginPath(); sx.arc(x, y, s.r, 0, TAU); sx.fill() }
     if (s.big) { sx.globalAlpha = s.a * tw * tw * .5; sx.strokeStyle = s.c; sx.lineWidth = .7; const l = s.r * 4.5 * tw; sx.beginPath(); sx.moveTo(x - l, y); sx.lineTo(x + l, y); sx.moveTo(x, y - l); sx.lineTo(x, y + l); sx.stroke() }
   }
-  if (!shoot && t > nextShoot) { const g = .35 + R() * .3; shoot = { x: W * (.3 + R() * .6), y: H * R() * .4, vx: -Math.cos(g), vy: Math.sin(g), t0: t }; nextShoot = t + 8 + R() * 9 }   // bintang jatuh, jarang
+  if (!shoot && t > nextShoot) { const g = .35 + R() * .3; shoot = { x: W * (.3 + R() * .6), y: H * R() * .4, vx: -Math.cos(g), vy: Math.sin(g), t0: t }; nextShoot = t + 8 + R() * 9 }
   if (shoot) { const k = t - shoot.t0; if (k > 1) shoot = null; else { sx.fillStyle = '#fff'; for (let i = 0; i < 10; i++) { const o = k * Math.min(W, H) * .5 - i * 7; sx.globalAlpha = (1 - k) * (1 - i / 10) * .8; sx.fillRect(shoot.x + shoot.vx * o, shoot.y + shoot.vy * o, 2, 2) } } }
-  if (a > 0) { const ap = sm((a - CFG.spin * CFG.cycle * .85) / 3);   // debu cahaya naik pelan setelah bunga mekar
+  if (a > 0) { const ap = sm((a - CFG.spin * CFG.cycle * .85) / 3);
     if (ap > 0) for (const q of sparks) { const p = (t * q.sp + q.ph) % 1, x = W / 2 + (q.xo + Math.sin(t * .7 + q.w) * .1) * SC, y = H / 2 + (1.1 - p * 3) * SC; sx.globalAlpha = Math.sin(p * PI) * ap * (.45 + .35 * Math.sin(t * 3 + q.w)); sx.fillStyle = q.c; sx.beginPath(); sx.arc(x, y, q.r, 0, TAU); sx.fill() } }
   sx.globalAlpha = 1;
 }
 
-/* ===================  MUSIK, JAM ANIMASI & LOOP  =================== */
 const bgm = new Audio(), playBtn = document.getElementById('play'), muteBtn = document.getElementById('mute');
-bgm.src = CFG.music; bgm.loop = true; bgm.preload = 'auto';    // loop bawaan -> audio tidak pernah bertumpuk, dan tidak memengaruhi animasi
+bgm.src = CFG.music; bgm.loop = true; bgm.preload = 'auto';
 let started = false, muted = false, realPlay = false, base = 0, fc = 0;
 bgm.addEventListener('error', () => console.warn('File musik tidak ditemukan: ' + CFG.music + ' — animasi tetap berjalan tanpa suara'));
-function frame(now) {   // animasi memakai jam sendiri: bloom sekali, lalu putaran & kupu-kupu berjalan terus; loop musik tidak memengaruhinya
+function frame(now) {
   requestAnimationFrame(frame);
   if (++fc % 2 == 0) drawStars(now / 1000, started ? (now - base) / 1000 : -1);
   if (started) { const a = (now - base) / 1000; draw(Math.min(a / CFG.cycle, 1), a) }
@@ -287,7 +283,7 @@ function frame(now) {   // animasi memakai jam sendiri: bloom sekali, lalu putar
 playBtn.addEventListener('click', () => {
   if (started) return; started = true; playBtn.disabled = true; playBtn.classList.add('gone'); muteBtn.classList.add('show');
   base = performance.now();
-  // "membuka kunci" audio dalam gestur klik (dibutuhkan iOS/Safari), lalu musik sungguhan mulai setelah CFG.lead detik
+
   bgm.muted = true; const unlock = Promise.resolve(bgm.play()).then(() => { bgm.pause(); bgm.currentTime = 0 }).catch(() => {});
   setTimeout(() => unlock.then(() => { bgm.currentTime = 0; bgm.muted = muted; realPlay = true; const p = bgm.play(); if (p && p.catch) p.catch(() => {}) }), CFG.lead * 1000);
 });
